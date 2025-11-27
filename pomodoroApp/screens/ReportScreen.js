@@ -1,23 +1,15 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, Dimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchSessions } from '../services/db';
 
-// NOTE: This file uses `react-native-chart-kit` and `react-native-svg`.
-// Install with:
-// npm install react-native-chart-kit react-native-svg
-// or
-// yarn add react-native-chart-kit react-native-svg
-
 import { BarChart } from 'react-native-chart-kit';
-// PieChart removed - causing undefined color errors
 
-const screenWidth = Dimensions.get('window').width - 40; // padding
+const screenWidth = Dimensions.get('window').width - 40; 
 
 export default function ReportScreen() {
   const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
@@ -26,13 +18,11 @@ export default function ReportScreen() {
   );
 
   const loadData = async () => {
-    setLoading(true);
     const data = await fetchSessions();
     setSessions(data || []);
-    setLoading(false);
   };
 
-  // Prepare chart data: last 7 days totals (actual_duration) and category distribution + general stats
+
   const { barData, barLabels, pieData, generalStats } = useMemo(() => {
     if (!sessions || sessions.length === 0) {
       return { 
@@ -43,7 +33,7 @@ export default function ReportScreen() {
       };
     }
 
-    // Helper: normalize date to YYYY-MM-DD
+
     const toDayKey = (iso) => {
       const d = new Date(iso);
       const y = d.getFullYear();
@@ -52,7 +42,7 @@ export default function ReportScreen() {
       return `${y}-${m}-${day}`;
     };
 
-    // Build last 7 day keys (from 6 days ago -> today)
+
     const days = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -62,7 +52,7 @@ export default function ReportScreen() {
 
     const dayTotals = Object.fromEntries(days.map(k => [k, 0]));
 
-    // Category totals and general stats
+
     const catTotals = {};
     const today = toDayKey(new Date().toISOString());
     let todayTotal = 0;
@@ -79,7 +69,7 @@ export default function ReportScreen() {
       const cat = s.category || 'Diğer';
       catTotals[cat] = (catTotals[cat] || 0) + actual;
 
-      // General stats
+
       if (key === today) todayTotal += actual;
       allTimeTotal += actual;
       totalDistractions += distractions;
@@ -90,9 +80,9 @@ export default function ReportScreen() {
       return dt.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
     });
 
-    const barData = days.map(d => Math.round((dayTotals[d] || 0) / 60)); // minutes
+    const barData = days.map(d => Math.round((dayTotals[d] || 0) / 60));
 
-    // Pie data: convert category totals to chart format
+
     const colors = ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0', '#F44336', '#FFEB3B', '#607D8B'];
     const pieData = Object.keys(catTotals).map((cat, idx) => ({
       name: cat,
@@ -103,8 +93,8 @@ export default function ReportScreen() {
     })).filter(p => p.minutes > 0);
 
     const generalStats = {
-      todayTotal: Math.round(todayTotal / 60), // dakika
-      allTimeTotal: Math.round(allTimeTotal / 60), // dakika
+      todayTotal: Math.round(todayTotal / 60),
+      allTimeTotal: Math.round(allTimeTotal / 60),
       totalDistractions
     };
 
@@ -118,25 +108,23 @@ export default function ReportScreen() {
 
   const formatMinSec = (seconds) => {
     const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}dk ${s}sn`;
+    return `${m}dk ${seconds % 60}sn`;
   };
 
   const renderItem = ({ item }) => {
-    // Başarı oranına göre renk belirleyelim
-    let statusColor = '#4CAF50'; // Yeşil (Yüksek başarı)
-    if (item.success_rate < 50) statusColor = '#F44336'; // Kırmızı (Düşük)
-    else if (item.success_rate < 80) statusColor = '#FF9800'; // Turuncu (Orta)
+    let statusColor = '#4CAF50';
+    if (item.success_rate < 50) statusColor = '#F44336';
+    else if (item.success_rate < 80) statusColor = '#FF9800';
 
     return (
       <View style={styles.card}>
-        {/* Üst Kısım: Kategori ve Tarih */}
+
         <View style={styles.cardHeader}>
           <Text style={styles.categoryTitle}>{item.category}</Text>
           <Text style={styles.dateText}>{formatDate(item.date)}</Text>
         </View>
 
-        {/* Orta Kısım: İstatistikler */}
+
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
             <Text style={styles.statLabel}>Hedef</Text>
@@ -156,7 +144,7 @@ export default function ReportScreen() {
           </View>
         </View>
 
-        {/* Alt Kısım: Başarı Çubuğu */}
+
         <View style={styles.progressContainer}>
           <View style={styles.progressBarBackground}>
             <View style={[styles.progressBarFill, { width: `${item.success_rate}%`, backgroundColor: statusColor }]} />
@@ -167,7 +155,7 @@ export default function ReportScreen() {
     );
   };
 
-  // Custom pie chart replacement using simple bars/legend
+
   const renderCategoryChart = (pieChartData) => {
     if (!pieChartData || pieChartData.length === 0) {
       return <Text style={{ textAlign: 'center', color: '#999', marginTop: 10 }}>Gösterilecek kategori verisi yok.</Text>;
@@ -215,7 +203,7 @@ export default function ReportScreen() {
         ListEmptyComponent={<Text style={{textAlign:'center', marginTop: 20, color:'#999'}}>Kayıt yok.</Text>}
         ListHeaderComponent={() => (
           <View>
-            {/* General Statistics */}
+
             <View style={{ marginBottom: 20 }}>
               <Text style={styles.chartTitle}>Genel İstatistikler</Text>
               <View style={styles.statsContainer}>
@@ -234,7 +222,7 @@ export default function ReportScreen() {
               </View>
             </View>
 
-            {/* Bar Chart - Last 7 days */}
+
             <View style={{ marginBottom: 20 }}>
               <Text style={styles.chartTitle}>Son 7 Gün (Dakika)</Text>
               {barLabels && barLabels.length > 0 ? (
@@ -257,7 +245,7 @@ export default function ReportScreen() {
               )}
             </View>
 
-            {/* Pie Chart - Category distribution */}
+
             <View style={{ marginBottom: 20 }}>
               <Text style={styles.chartTitle}>Kategori Dağılımı (Dakika)</Text>
               {pieData && pieData.length > 0 ? (
@@ -273,8 +261,6 @@ export default function ReportScreen() {
                         legendFontSize: p.legendFontSize || 12
                       };
                     }).filter(Boolean).filter(x => x.population > 0);
-
-                    console.log('📈 pieChartData', pieChartData);
 
                     if (pieChartData.length === 0) {
                       return <Text style={{ textAlign: 'center', color: '#999', marginTop: 10 }}>Gösterilecek kategori verisi yok.</Text>;

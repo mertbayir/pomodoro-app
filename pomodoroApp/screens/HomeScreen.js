@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, AppState } from 'react-native';
 
-// VERİTABANI BAĞLANTISI (Burayı ekledik)
+
 import { insertSession } from '../services/db';
 
 export default function HomeScreen() {
@@ -16,31 +16,29 @@ export default function HomeScreen() {
     "Diğer"
   ];
 
-  // --- STATE VARIABLES ---
+
   const [targetMinutes, setTargetMinutes] = useState(25); 
   const [timer, setTimer] = useState(25 * 60); 
   const [isRunning, setIsRunning] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
   
-  // Session tracking için yeni state'ler
+
   const [sessionStarted, setSessionStarted] = useState(false);
-  const [sessionStartTime, setSessionStartTime] = useState(null);
   const [initialTimer, setInitialTimer] = useState(25 * 60);
   const [distractionCount, setDistractionCount] = useState(0);
-  const [currentAppState, setCurrentAppState] = useState(AppState.currentState);
-  // refs to avoid stale closures inside AppState listener
+
   const isRunningRef = useRef(isRunning);
   const sessionStartedRef = useRef(sessionStarted);
   const prevAppStateRef = useRef(AppState.currentState);
 
-  // targetMinutes değiştiğinde initialTimer'ı da güncelle
+
   useEffect(() => {
     if (!sessionStarted) {
       setInitialTimer(targetMinutes * 60);
     }
   }, [targetMinutes, sessionStarted]);
 
-  // --- EFFECTS (GÜNCELLENEN KISIM) ---
+
   useEffect(() => {
     let interval = null;
 
@@ -49,39 +47,33 @@ export default function HomeScreen() {
         setTimer((prevTimer) => prevTimer - 1);
       }, 1000);
     } else if (timer === 0 && isRunning) {
-      // SÜRE BİTTİĞİNDE BURASI ÇALIŞIR
-      handleSessionComplete(true); // Başarıyla tamamlandı
+
+      handleSessionComplete(true);
     }
 
     return () => clearInterval(interval);
   }, [isRunning, timer]);
 
-  // AppState listener - dikkat dağınıklığı takibi
+
   useEffect(() => {
-    // keep refs in sync with state to avoid stale closures in listener
+
     isRunningRef.current = isRunning;
     sessionStartedRef.current = sessionStarted;
 
-    // single, stable AppState listener — register once
+
     const handleAppStateChange = (nextAppState) => {
       const prev = prevAppStateRef.current;
-      console.log('🔄 AppState değişti:', prev, '→', nextAppState);
       prevAppStateRef.current = nextAppState;
 
-      // Eğer session başlamış ve timer çalışıyorsa, active -> background geçişi dikkat dağınıklığıdır
+
       if (sessionStartedRef.current && isRunningRef.current) {
         if (prev === 'active' && (nextAppState === 'background' || nextAppState === 'inactive')) {
-          console.log('⚠️ DİKKAT DAĞINIKLIĞI TESPİT EDİLDİ (ref listener)');
-          setDistractionCount(prevCount => {
-            const newCount = prevCount + 1;
-            console.log('📊 Dikkat sayısı:', prevCount, '→', newCount);
-            return newCount;
-          });
+          setDistractionCount(prevCount => prevCount + 1);
           setIsRunning(false);
         }
       }
 
-      // Eğer session başladı ama timer duruyorsa ve kullanıcı uygulamaya geri döndüyse, devam etmek isteyip istemediğini sor
+
       if (sessionStartedRef.current && !isRunningRef.current) {
         if ((prev === 'background' || prev === 'inactive') && nextAppState === 'active') {
           setTimeout(() => {
@@ -102,9 +94,9 @@ export default function HomeScreen() {
     return () => subscription?.remove();
   }, [isRunning, sessionStarted]);
 
-  // --- FUNCTIONS ---
 
-  // Session'ı kaydetme fonksiyonu
+
+
   const handleSessionComplete = async (isCompleted) => {
     if (!sessionStarted) return;
 
@@ -112,12 +104,7 @@ export default function HomeScreen() {
     const successRate = Math.round((actualDuration / initialTimer) * 100);
     const status = isCompleted ? 'TAMAMLANDI' : 'YARIDA KALDI';
 
-    console.log('📊 Session Detayları:');
-    console.log('- Hedef süre:', initialTimer, 'saniye (', Math.floor(initialTimer/60), 'dk)');
-    console.log('- Kalan süre:', timer, 'saniye');
-    console.log('- Çalışılan süre:', actualDuration, 'saniye (', Math.floor(actualDuration/60), 'dk)');
-    console.log('- Başarı oranı:', successRate, '%');
-    console.log('- Durum:', status);
+
 
     try {
       await insertSession(
@@ -136,16 +123,13 @@ export default function HomeScreen() {
       Alert.alert("Session Tamamlandı", message);
       
     } catch (error) {
-      console.log("Kayıt hatası:", error);
       Alert.alert("Hata", "Session kaydedilemedi!");
     }
 
     // Session state'lerini resetle
     setSessionStarted(false);
-    setSessionStartTime(null);
     setDistractionCount(0);
     setIsRunning(false);
-    setCurrentAppState(AppState.currentState);
   };
 
   const adjustTime = (amount) => {
@@ -161,11 +145,9 @@ export default function HomeScreen() {
 
   const toggleTimer = () => {
     if (!isRunning && !sessionStarted) {
-      // İlk kez başlatılıyor
-      console.log('🚀 Session başlıyor - Timer değeri:', timer, 'saniye');
+
       setSessionStarted(true);
-      setSessionStartTime(new Date());
-      setInitialTimer(timer); // Mevcut timer değerini başlangıç olarak kaydet
+      setInitialTimer(timer);
       setDistractionCount(0);
     }
     setIsRunning(!isRunning);
@@ -182,20 +164,17 @@ export default function HomeScreen() {
             text: "Kaydetme",
             style: "cancel",
             onPress: () => {
-              // Session'ı kaydetmeden resetle
               setSessionStarted(false);
-              setSessionStartTime(null);
               setDistractionCount(0);
               setIsRunning(false);
               setTimer(targetMinutes * 60);
-              setCurrentAppState(AppState.currentState);
               // initialTimer useEffect ile otomatik güncellenir
             }
           },
           {
             text: "Kaydet",
             onPress: () => {
-              handleSessionComplete(false); // Yarım kalmış olarak kaydet
+              handleSessionComplete(false);
               setTimer(targetMinutes * 60);
               // initialTimer useEffect ile otomatik güncellenir
             }
@@ -203,10 +182,8 @@ export default function HomeScreen() {
         ]
       );
     } else {
-      // Normal reset
       setIsRunning(false);
       setTimer(targetMinutes * 60);
-      // initialTimer useEffect ile otomatik güncellenir
     }
   };
 

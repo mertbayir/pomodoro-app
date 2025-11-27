@@ -27,15 +27,12 @@ export const initDB = async () => {
         const hasDistraction = cols.some(c => c.name === 'distraction_count');
         if (!hasDistraction) {
           await db.execAsync("ALTER TABLE sessions_detailed ADD COLUMN distraction_count INTEGER DEFAULT 0;");
-          console.log('🔧 distraction_count sütunu eklendi.');
         }
       } catch (e) {
         // Eğer PRAGMA veya ALTER desteklenmezse sessizce devam et
-        console.log('db migration kontrol hatası:', e);
       }
-    console.log('✅ Detaylı tablo hazır.');
   } catch (error) {
-    console.log('❌ Tablo hatası:', error);
+    // Tablo oluşturma hatası
   }
 };
 
@@ -49,10 +46,8 @@ export const insertSession = async (category, target, actual, rate, status, dist
       'INSERT INTO sessions_detailed (category, target_duration, actual_duration, success_rate, status, distraction_count, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [category, target, actual, rate, status, distractionCount, date]
     );
-    console.log('✅ Kayıt Detaylı Eklendi:', category, '-', Math.floor(actual/60), 'dk -', rate, '% Başarı - Dikkat:', distractionCount);
     return true;
   } catch (error) {
-    console.log('❌ Ekleme hatası:', error);
     return false;
   }
 };
@@ -63,7 +58,6 @@ export const fetchSessions = async () => {
     const allRows = await db.getAllAsync('SELECT * FROM sessions_detailed ORDER BY id DESC');
     return allRows;
   } catch (error) {
-    console.log('❌ Veri çekme hatası:', error);
     return [];
   }
 };
