@@ -17,10 +17,10 @@ export default function ReportScreen() {
     }, [])
   );
 
-  const loadData = async () => {
+  async function loadData() {
     const data = await fetchSessions();
     setSessions(data || []);
-  };
+  }
 
 
   const { barData, barLabels, pieData, generalStats } = useMemo(() => {
@@ -158,30 +158,56 @@ export default function ReportScreen() {
 
   const renderCategoryChart = (pieChartData) => {
     if (!pieChartData || pieChartData.length === 0) {
-      return <Text style={{ textAlign: 'center', color: '#999', marginTop: 10 }}>Gösterilecek kategori verisi yok.</Text>;
+      return <Text style={{ textAlign: 'center', color: '#94A3B8', marginTop: 12, fontSize: 14, fontWeight: '500' }}>Gösterilecek kategori verisi yok.</Text>;
     }
 
     const total = pieChartData.reduce((sum, p) => sum + p.population, 0);
     
     return (
-      <View style={{ padding: 15, backgroundColor: '#F9FAFB', borderRadius: 12 }}>
+      <View style={{ 
+        padding: 20, 
+        backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(226, 232, 240, 0.5)'
+      }}>
         {pieChartData.map((p, i) => {
           const percentage = total > 0 ? Math.round((p.population / total) * 100) : 0;
           return (
-            <View key={i} style={{ marginBottom: 12 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <View key={i} style={{ marginBottom: 16 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={{ width: 16, height: 16, backgroundColor: p.color || '#BBB', marginRight: 8, borderRadius: 3 }} />
-                  <Text style={{ color: '#333', fontWeight: '500' }}>{p.name}</Text>
+                  <View style={{ 
+                    width: 20, 
+                    height: 20, 
+                    backgroundColor: p.color || '#94A3B8', 
+                    marginRight: 12, 
+                    borderRadius: 6,
+                    shadowColor: p.color || '#94A3B8',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
+                    elevation: 3
+                  }} />
+                  <Text style={{ color: '#1E293B', fontWeight: '600', fontSize: 15, letterSpacing: 0.2 }}>{p.name}</Text>
                 </View>
-                <Text style={{ color: '#666', fontSize: 12 }}>{p.population} dk (%{percentage})</Text>
+                <Text style={{ color: '#64748B', fontSize: 13, fontWeight: '600' }}>{p.population} dk (%{percentage})</Text>
               </View>
-              <View style={{ height: 6, backgroundColor: '#E0E0E0', borderRadius: 3, overflow: 'hidden' }}>
+              <View style={{ height: 8, backgroundColor: '#E2E8F0', borderRadius: 6, overflow: 'hidden' }}>
                 <View style={{ 
                   width: `${percentage}%`, 
                   height: '100%', 
-                  backgroundColor: p.color || '#BBB',
-                  borderRadius: 3 
+                  backgroundColor: p.color || '#94A3B8',
+                  borderRadius: 6,
+                  shadowColor: p.color || '#94A3B8',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 2
                 }} />
               </View>
             </View>
@@ -280,32 +306,128 @@ export default function ReportScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', padding: 20, color: '#333' },
-  chartTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 10, marginLeft: 5, color: '#333' },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#bcd3fdff'
+  },
+  headerTitle: { 
+    fontSize: 28, 
+    fontWeight: '700', 
+    padding: 20, 
+    color: '#1E293B',
+    letterSpacing: 0.5,
+    textShadowColor: 'rgba(0,0,0,0.1)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4
+  },
+  chartTitle: { 
+    fontSize: 18, 
+    fontWeight: '700', 
+    marginBottom: 12, 
+    marginLeft: 8, 
+    color: '#1E293B',
+    letterSpacing: 0.3
+  },
   listContent: { paddingHorizontal: 20, paddingBottom: 20 },
-  card: { backgroundColor: '#F9FAFB', borderRadius: 12, padding: 15, marginBottom: 15, borderWidth: 1, borderColor: '#eee' },
+  card: { 
+    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+    borderRadius: 20, 
+    padding: 20, 
+    marginBottom: 16, 
+    borderWidth: 1, 
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 10,
+    backdropFilter: 'blur(20px)'
+  },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  categoryTitle: { fontSize: 16, fontWeight: 'bold', color: '#333' },
-  dateText: { fontSize: 12, color: '#999' },
+  categoryTitle: { 
+    fontSize: 18, 
+    fontWeight: '700', 
+    color: '#1E293B',
+    letterSpacing: 0.3
+  },
+  dateText: { 
+    fontSize: 13, 
+    color: '#64748B',
+    fontWeight: '500'
+  },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
   statBox: { alignItems: 'center' },
-  statLabel: { fontSize: 11, color: '#888' },
-  statValue: { fontSize: 14, fontWeight: '600', color: '#444' },
+  statLabel: { 
+    fontSize: 12, 
+    color: '#64748B',
+    fontWeight: '600',
+    letterSpacing: 0.2
+  },
+  statValue: { 
+    fontSize: 15, 
+    fontWeight: '700', 
+    color: '#1E293B',
+    letterSpacing: 0.2
+  },
   progressContainer: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  progressBarBackground: { flex: 1, height: 8, backgroundColor: '#e0e0e0', borderRadius: 4, overflow: 'hidden' },
-  progressBarFill: { height: '100%', borderRadius: 4 },
-  rateText: { fontSize: 14, fontWeight: 'bold', width: 40, textAlign: 'right' },
-  statsContainer: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
+  progressBarBackground: { 
+    flex: 1, 
+    height: 10, 
+    backgroundColor: '#E2E8F0', 
+    borderRadius: 6, 
+    overflow: 'hidden'
+  },
+  progressBarFill: { 
+    height: '100%', 
+    borderRadius: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4
+  },
+  rateText: { 
+    fontSize: 15, 
+    fontWeight: '800', 
+    width: 45, 
+    textAlign: 'right',
+    letterSpacing: 0.3
+  },
+  statsContainer: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    gap: 12
+  },
   statCard: { 
     flex: 1, 
-    backgroundColor: '#F0F8FF', 
-    padding: 15, 
-    borderRadius: 12, 
+    backgroundColor: 'rgba(238, 242, 255, 0.8)', 
+    padding: 18, 
+    borderRadius: 20, 
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E3F2FD'
+    borderWidth: 2,
+    borderColor: 'rgba(99, 102, 241, 0.2)',
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    backdropFilter: 'blur(10px)'
   },
-  statNumber: { fontSize: 24, fontWeight: 'bold', color: '#1976D2', marginBottom: 4 },
-  statLabel: { fontSize: 11, color: '#666', textAlign: 'center', fontWeight: '500' },
+  statNumber: { 
+    fontSize: 28, 
+    fontWeight: '800', 
+    color: '#6366F1', 
+    marginBottom: 6,
+    letterSpacing: 0.5,
+    textShadowColor: 'rgba(99, 102, 241, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4
+  },
+  statLabel: { 
+    fontSize: 12, 
+    color: '#64748B', 
+    textAlign: 'center', 
+    fontWeight: '600',
+    letterSpacing: 0.3
+  },
+  
 });

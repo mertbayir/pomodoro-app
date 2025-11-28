@@ -195,8 +195,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      
-      <Text style={styles.headerTitle}>Focus Timer</Text>
+      <Text style={styles.headerTitle}>Pomodoro Uygulaması</Text>
 
       {/* 1. Category Selection */}
       <View style={styles.categoryWrapper}>
@@ -207,18 +206,24 @@ export default function HomeScreen() {
               key={index} 
               style={[
                 styles.categoryButton, 
-                selectedCategory === category ? styles.categoryButtonActive : null
+                selectedCategory === category ? styles.categoryButtonActive : null,
+                sessionStarted ? styles.categoryButtonDisabled : null
               ]}
-              onPress={() => setSelectedCategory(category)}
+              onPress={() => !sessionStarted && setSelectedCategory(category)}
+              disabled={sessionStarted}
             >
               <Text 
                 style={[
                   styles.categoryText, 
-                  selectedCategory === category ? styles.categoryTextActive : null
+                  selectedCategory === category ? styles.categoryTextActive : null,
+                  sessionStarted ? styles.categoryTextDisabled : null
                 ]}
               >
                 {category}
               </Text>
+              {selectedCategory === category && (
+                <View style={styles.activeIndicator} />
+              )}
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -283,29 +288,224 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 50, backgroundColor: '#fff', alignItems: 'center', },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#333', marginBottom: 20, },
-  sectionLabel: { fontSize: 14, color: '#888', marginBottom: 5, marginLeft: 10, alignSelf: 'flex-start' },
-  categoryWrapper: { height: 80, width: '100%', },
+  container: { 
+    flex: 1, 
+    paddingTop: 50, 
+    backgroundColor: '#bcd3fdff',
+    alignItems: 'center'
+  },
+  headerTitle: { 
+    fontSize: 28, 
+    fontWeight: '700', 
+    color: '#1E293B', 
+    marginBottom: 25,
+    letterSpacing: 0.5,
+    textShadowColor: 'rgba(0,0,0,0.1)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4
+  },
+  sectionLabel: { 
+    fontSize: 15, 
+    color: '#64748B', 
+    marginBottom: 8, 
+    marginLeft: 12, 
+    alignSelf: 'flex-start',
+    fontWeight: '600',
+    letterSpacing: 0.3
+  },
+  categoryWrapper: { 
+    height: 100, 
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    marginVertical: 10,
+    paddingVertical: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 6
+  },
   scrollArea: { paddingLeft: 10, },
-  categoryButton: { backgroundColor: '#f0f0f0', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, marginRight: 8, height: 36, justifyContent: 'center', borderWidth: 1, borderColor: 'transparent' },
-  categoryButtonActive: { backgroundColor: '#E3F2FD', borderColor: '#007AFF', },
-  categoryText: { color: '#555', fontWeight: '500', fontSize: 13, },
-  categoryTextActive: { color: '#007AFF', fontWeight: '700', },
-  adjusterContainer: { width: '90%', marginVertical: 10, padding: 10, backgroundColor: '#F9FAFB', borderRadius: 15, },
+  categoryButton: { 
+    backgroundColor: '#F1F5F9', 
+    paddingVertical: 10, 
+    paddingHorizontal: 18, 
+    borderRadius: 25, 
+    marginRight: 10, 
+    height: 42, 
+    justifyContent: 'center', 
+    borderWidth: 2, 
+    borderColor: 'transparent',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2
+  },
+  categoryButtonActive: { 
+    backgroundColor: '#EEF2FF',
+    borderColor: '#4F46E5',
+    borderWidth: 2,
+    shadowColor: '#4F46E5',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 6
+  },
+  categoryText: { 
+    color: '#64748B', 
+    fontWeight: '600', 
+    fontSize: 14,
+    letterSpacing: 0.2
+  },
+  categoryTextActive: { 
+    color: '#4F46E5', 
+    fontWeight: '700',
+    textShadowColor: 'rgba(99, 102, 241, 0.18)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2
+  },
+
+  activeIndicator: {
+    marginTop: 8,
+    width: '60%',
+    height: 4,
+    backgroundColor: '#4F46E5',
+    borderRadius: 4,
+    alignSelf: 'center'
+  },
+  categoryButtonDisabled: {
+    backgroundColor: '#F1F5F9',
+    borderColor: '#E2E8F0',
+    opacity: 0.6
+  },
+  categoryTextDisabled: {
+    color: '#94A3B8'
+  },
+  adjusterContainer: { 
+    width: '90%', 
+    marginVertical: 15, 
+    padding: 20, 
+    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+    borderRadius: 24,
+    backdropFilter: 'blur(20px)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)'
+  },
   adjusterControls: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', },
-  adjustBtn: { backgroundColor: '#fff', width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#ddd', shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 1, elevation: 2, },
-  adjustBtnText: { fontSize: 16, fontWeight: 'bold', color: '#555', },
+  adjustBtn: { 
+    backgroundColor: '#FFFFFF', 
+    width: 48, 
+    height: 48, 
+    borderRadius: 24, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    borderWidth: 2, 
+    borderColor: '#E2E8F0', 
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6
+  },
+  adjustBtnText: { 
+    fontSize: 18, 
+    fontWeight: '700', 
+    color: '#475569'
+  },
   timeDisplayBox: { paddingHorizontal: 15, },
-  timeDisplayText: { fontSize: 24, fontWeight: 'bold', color: '#333', },
-  timerContainer: { alignItems: 'center', marginVertical: 30, },
-  counterText: { fontSize: 72, fontWeight: 'bold', color: '#222', fontVariant: ['tabular-nums'], },
-  currentTaskText: { fontSize: 16, color: '#666', marginTop: 5, },
-  buttonRow: { flexDirection: 'row', gap: 20, marginTop: 10, },
-  button: { paddingVertical: 15, paddingHorizontal: 40, borderRadius: 30, minWidth: 120, alignItems: 'center', },
-  btnStart: { backgroundColor: '#007AFF' }, 
-  btnPause: { backgroundColor: '#FF9800' }, 
-  btnReset: { backgroundColor: '#CFD8DC' }, 
-  btnText: { color: 'white', fontSize: 18, fontWeight: 'bold', },
-  distractionText: { fontSize: 14, color: '#FF5722', marginTop: 5, fontWeight: '600' },
+  timeDisplayText: { 
+    fontSize: 32, 
+    fontWeight: '800', 
+    color: '#1E293B',
+    textShadowColor: 'rgba(0,0,0,0.1)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    letterSpacing: 1
+  },
+  timerContainer: { 
+    alignItems: 'center', 
+    marginVertical: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingVertical: 30,
+    paddingHorizontal: 40,
+    borderRadius: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)'
+  },
+  counterText: { 
+    fontSize: 84, 
+    fontWeight: '900', 
+    color: '#0F172A', 
+    fontVariant: ['tabular-nums'],
+    textShadowColor: 'rgba(0,0,0,0.1)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 6,
+    letterSpacing: 2
+  },
+  currentTaskText: { 
+    fontSize: 18, 
+    color: '#64748B', 
+    marginTop: 8,
+    fontWeight: '500',
+    letterSpacing: 0.3
+  },
+  buttonRow: { 
+    flexDirection: 'row', 
+    gap: 24, 
+    marginTop: 20,
+    marginBottom: 20
+  },
+  button: { 
+    paddingVertical: 18, 
+    paddingHorizontal: 32, 
+    borderRadius: 28, 
+    minWidth: 140, 
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8
+  },
+  btnStart: { 
+    backgroundColor: '#10B981',
+    shadowColor: '#10B981'
+  }, 
+  btnPause: { 
+    backgroundColor: '#F59E0B',
+    shadowColor: '#F59E0B'
+  }, 
+  btnReset: { 
+    backgroundColor: '#94A3B8',
+    shadowColor: '#94A3B8'
+  }, 
+  btnText: { 
+    color: 'white', 
+    fontSize: 16, 
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2
+  },
+  distractionText: { 
+    fontSize: 15, 
+    color: '#EF4444', 
+    marginTop: 8, 
+    fontWeight: '700',
+    letterSpacing: 0.2
+  },
+  
 });
