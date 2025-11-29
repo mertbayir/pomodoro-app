@@ -157,8 +157,8 @@ export default function HomeScreen() {
     if (sessionStarted) {
       // Eğer session başlamışsa, kullanıcıya kaydetmek isteyip istemediğini sor
       Alert.alert(
-        "Session'ı Kaydet?", 
-        "Çalışma seansı henüz bitmedi. Mevcut ilerlemeyi kaydetmek ister misiniz?",
+        "Çalışma Verileri Kaydedilsin mi?", 
+        "Çalışma programınızı henüz bitirmediniz. Mevcut ilerlemeyi kaydetmek ister misiniz?",
         [
           {
             text: "Kaydetme",
@@ -176,7 +176,6 @@ export default function HomeScreen() {
             onPress: () => {
               handleSessionComplete(false);
               setTimer(targetMinutes * 60);
-              // initialTimer useEffect ile otomatik güncellenir
             }
           }
         ]
@@ -316,7 +315,7 @@ const styles = StyleSheet.create({
   categoryWrapper: { 
     height: 100, 
     width: '100%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#fdf8e0ff',
     borderRadius: 20,
     marginVertical: 10,
     paddingVertical: 10,
