@@ -1,6 +1,6 @@
-# 🍅 Pomodoro Focus Timer
+# 🍅 Pomodoro Odaklanma Uygulaması
 
-Modern ve şık tasarımlı Pomodoro tekniği uygulaması. Odaklanmanızı artırın, verimliliğinizi takip edin!
+Sakarya Üniversitesi Bilgisayar Mühendisliği Güz Dönemi Mobil Uygulama Geliştirme Dersi için geliştirildi. Modern ve şık tasarımlı Pomodoro tekniği uygulaması. Odaklanmanızı artırın, verimliliğinizi takip edin.
 
 ## ✨ Özellikler
 
