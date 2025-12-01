@@ -13,6 +13,9 @@ export default function HomeScreen() {
     "Ödev Yapma", 
     "Kitap Okuma", 
     "Yazı Hazırlama",
+    "Günlük Planlama",
+    "Egzersiz",
+    "Meditasyon",
     "Diğer"
   ];
 
