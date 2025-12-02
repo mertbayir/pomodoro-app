@@ -226,7 +226,7 @@ export default function ReportScreen() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
-        ListEmptyComponent={<Text style={{textAlign:'center', marginTop: 20, color:'#999'}}>Kayıt yok.</Text>}
+        ListEmptyComponent={<Text style={{textAlign:'center', marginTop: 40, color:'#64748B', fontSize: 16, fontWeight: '500'}}>Henüz kayıt bulunmuyor.</Text>}
         ListHeaderComponent={() => (
           <View>
 

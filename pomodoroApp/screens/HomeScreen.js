@@ -120,7 +120,7 @@ export default function HomeScreen() {
       );
       
       const message = isCompleted 
-        ? `Tebrikler! ${Math.floor(actualDuration/60)} dakika odaklandınız. ☕️`
+        ? `🎉 Tebrikler! ${Math.floor(actualDuration/60)} dakika odaklandınız!`
         : `Session kaydedildi. ${Math.floor(actualDuration/60)} dakika çalıştınız (Başarı: %${successRate})`;
         
       Alert.alert("Session Tamamlandı", message);
@@ -190,9 +190,9 @@ export default function HomeScreen() {
   };
 
   const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes < 10 ? '0' : ''}${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
   return (
@@ -273,7 +273,7 @@ export default function HomeScreen() {
       {/* 4. Action Buttons */}
       <View style={styles.buttonRow}>
         <TouchableOpacity style={[styles.button, styles.btnReset]} onPress={resetTimer}>
-          <Text style={styles.btnText}>Reset</Text>
+          <Text style={styles.btnText}>Sıfırla</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -281,7 +281,7 @@ export default function HomeScreen() {
           onPress={toggleTimer}
         >
           <Text style={styles.btnText}>
-            {isRunning ? 'Pause' : sessionStarted ? 'Devam' : 'Start'}
+            {isRunning ? 'Duraklat' : sessionStarted ? 'Devam' : 'Başla'}
           </Text>
         </TouchableOpacity>
       </View>
