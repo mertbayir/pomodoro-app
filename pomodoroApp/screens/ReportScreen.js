@@ -308,17 +308,17 @@ export default function ReportScreen() {
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    backgroundColor: '#bcd3fdff'
+    backgroundColor: '#E0E7FF'
   },
   headerTitle: { 
-    fontSize: 28, 
-    fontWeight: '700', 
+    fontSize: 30, 
+    fontWeight: '800', 
     padding: 20, 
-    color: '#1E293B',
-    letterSpacing: 0.5,
-    textShadowColor: 'rgba(0,0,0,0.1)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4
+    color: '#4338CA',
+    letterSpacing: 0.8,
+    textShadowColor: 'rgba(67, 56, 202, 0.2)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 6
   },
   chartTitle: { 
     fontSize: 18, 
@@ -331,16 +331,16 @@ const styles = StyleSheet.create({
   listContent: { paddingHorizontal: 20, paddingBottom: 20 },
   card: { 
     backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-    borderRadius: 20, 
-    padding: 20, 
-    marginBottom: 16, 
+    borderRadius: 24, 
+    padding: 22, 
+    marginBottom: 18, 
     borderWidth: 1, 
     borderColor: 'rgba(226, 232, 240, 0.8)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 12,
     backdropFilter: 'blur(20px)'
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
@@ -399,17 +399,17 @@ const styles = StyleSheet.create({
   },
   statCard: { 
     flex: 1, 
-    backgroundColor: 'rgba(238, 242, 255, 0.8)', 
-    padding: 18, 
-    borderRadius: 20, 
+    backgroundColor: 'rgba(238, 242, 255, 0.95)', 
+    padding: 20, 
+    borderRadius: 24, 
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(99, 102, 241, 0.2)',
+    borderColor: 'rgba(99, 102, 241, 0.3)',
     shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 10,
     backdropFilter: 'blur(10px)'
   },
   statNumber: { 

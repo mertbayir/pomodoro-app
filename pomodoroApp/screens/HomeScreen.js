@@ -292,19 +292,19 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    paddingTop: 50, 
-    backgroundColor: '#bcd3fdff',
+    paddingTop: 55, 
+    backgroundColor: '#E0E7FF',
     alignItems: 'center'
   },
   headerTitle: { 
-    fontSize: 28, 
-    fontWeight: '700', 
-    color: '#1E293B', 
-    marginBottom: 25,
-    letterSpacing: 0.5,
-    textShadowColor: 'rgba(0,0,0,0.1)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4
+    fontSize: 30, 
+    fontWeight: '800', 
+    color: '#4338CA', 
+    marginBottom: 20,
+    letterSpacing: 0.8,
+    textShadowColor: 'rgba(67, 56, 202, 0.2)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 6
   },
   sectionLabel: { 
     fontSize: 15, 
@@ -318,15 +318,15 @@ const styles = StyleSheet.create({
   categoryWrapper: { 
     height: 100, 
     width: '100%',
-    backgroundColor: '#fdf8e0ff',
-    borderRadius: 20,
-    marginVertical: 10,
-    paddingVertical: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 6
+    backgroundColor: '#FEF3C7',
+    borderRadius: 24,
+    marginVertical: 12,
+    paddingVertical: 12,
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 8
   },
   scrollArea: { paddingLeft: 10, },
   categoryButton: { 
@@ -403,18 +403,18 @@ const styles = StyleSheet.create({
   adjusterControls: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', },
   adjustBtn: { 
     backgroundColor: '#FFFFFF', 
-    width: 48, 
-    height: 48, 
-    borderRadius: 24, 
+    width: 52, 
+    height: 52, 
+    borderRadius: 26, 
     justifyContent: 'center', 
     alignItems: 'center', 
     borderWidth: 2, 
-    borderColor: '#E2E8F0', 
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6
+    borderColor: '#C7D2FE', 
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    elevation: 8
   },
   adjustBtnText: { 
     fontSize: 18, 
@@ -433,18 +433,18 @@ const styles = StyleSheet.create({
   },
   timerContainer: { 
     alignItems: 'center', 
-    marginVertical: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingVertical: 30,
-    paddingHorizontal: 40,
-    borderRadius: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-    elevation: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)'
+    marginVertical: 35,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingVertical: 35,
+    paddingHorizontal: 50,
+    borderRadius: 40,
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 30,
+    elevation: 15,
+    borderWidth: 2,
+    borderColor: 'rgba(99, 102, 241, 0.1)'
   },
   counterText: { 
     fontSize: 84, 
@@ -470,28 +470,28 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   button: { 
-    paddingVertical: 18, 
-    paddingHorizontal: 32, 
-    borderRadius: 28, 
-    minWidth: 140, 
+    paddingVertical: 20, 
+    paddingHorizontal: 38, 
+    borderRadius: 32, 
+    minWidth: 150, 
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 8
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 10
   },
   btnStart: { 
-    backgroundColor: '#10B981',
-    shadowColor: '#10B981'
+    backgroundColor: '#22C55E',
+    shadowColor: '#22C55E'
   }, 
   btnPause: { 
-    backgroundColor: '#F59E0B',
-    shadowColor: '#F59E0B'
+    backgroundColor: '#FB923C',
+    shadowColor: '#FB923C'
   }, 
   btnReset: { 
-    backgroundColor: '#94A3B8',
-    shadowColor: '#94A3B8'
+    backgroundColor: '#64748B',
+    shadowColor: '#64748B'
   }, 
   btnText: { 
     color: 'white', 
