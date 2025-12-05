@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: { 
     fontSize: 15, 
-    color: '#64748B', 
+    color: '#475569', 
     marginBottom: 8, 
     marginLeft: 12, 
     alignSelf: 'flex-start',
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   categoryText: { 
     color: '#64748B', 
     fontWeight: '600', 
-    fontSize: 14,
+    fontSize: 15,
     letterSpacing: 0.2
   },
   categoryTextActive: { 
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   adjusterContainer: { 
     width: '90%', 
     marginVertical: 15, 
-    padding: 20, 
+    padding: 24, 
     backgroundColor: 'rgba(255, 255, 255, 0.95)', 
     borderRadius: 24,
     backdropFilter: 'blur(20px)',
@@ -447,14 +447,14 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(99, 102, 241, 0.1)'
   },
   counterText: { 
-    fontSize: 84, 
+    fontSize: 88, 
     fontWeight: '900', 
     color: '#0F172A', 
     fontVariant: ['tabular-nums'],
     textShadowColor: 'rgba(0,0,0,0.1)',
     textShadowOffset: { width: 0, height: 3 },
     textShadowRadius: 6,
-    letterSpacing: 2
+    letterSpacing: 3
   },
   currentTaskText: { 
     fontSize: 18, 
@@ -465,8 +465,8 @@ const styles = StyleSheet.create({
   },
   buttonRow: { 
     flexDirection: 'row', 
-    gap: 24, 
-    marginTop: 20,
+    gap: 28, 
+    marginTop: 25,
     marginBottom: 20
   },
   button: { 
@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
   },
   distractionText: { 
     fontSize: 15, 
-    color: '#EF4444', 
+    color: '#DC2626', 
     marginTop: 8, 
     fontWeight: '700',
     letterSpacing: 0.2

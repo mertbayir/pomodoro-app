@@ -323,8 +323,8 @@ const styles = StyleSheet.create({
   chartTitle: { 
     fontSize: 18, 
     fontWeight: '700', 
-    marginBottom: 12, 
-    marginLeft: 8, 
+    marginBottom: 14, 
+    marginLeft: 10, 
     color: '#1E293B',
     letterSpacing: 0.3
   },
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   progressContainer: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   progressBarBackground: { 
     flex: 1, 
-    height: 10, 
+    height: 12, 
     backgroundColor: '#E2E8F0', 
     borderRadius: 6, 
     overflow: 'hidden'
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     backdropFilter: 'blur(10px)'
   },
   statNumber: { 
-    fontSize: 28, 
+    fontSize: 30, 
     fontWeight: '800', 
     color: '#6366F1', 
     marginBottom: 6,
