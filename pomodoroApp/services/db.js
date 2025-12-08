@@ -2,9 +2,19 @@ import * as SQLite from 'expo-sqlite';
 
 const DB_NAME = 'focusApp.db';
 
+// Singleton pattern - tek bir DB instance kullan
+let dbInstance = null;
+
+const getDB = async () => {
+  if (!dbInstance) {
+    dbInstance = await SQLite.openDatabaseAsync(DB_NAME);
+  }
+  return dbInstance;
+};
+
 export const initDB = async () => {
   try {
-    const db = await SQLite.openDatabaseAsync(DB_NAME);
+    const db = await getDB();
     
     // Tablo ismini değiştirdik: sessions_detailed
       await db.execAsync(`
@@ -39,25 +49,35 @@ export const initDB = async () => {
 // Yeni Ekleme Fonksiyonu (Tüm detayları alıyor)
 export const insertSession = async (category, target, actual, rate, status, distractionCount = 0) => {
   try {
-    const db = await SQLite.openDatabaseAsync(DB_NAME);
+    const db = await getDB();
     const date = new Date().toISOString();
     
     await db.runAsync(
       'INSERT INTO sessions_detailed (category, target_duration, actual_duration, success_rate, status, distraction_count, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [category, target, actual, rate, status, distractionCount, date]
     );
+    
+    // Veri yazıldıktan sonra WAL checkpoint yap
+    await db.execAsync('PRAGMA wal_checkpoint(PASSIVE);');
+    
     return true;
   } catch (error) {
+    console.error('Insert session error:', error);
     return false;
   }
 };
 
 export const fetchSessions = async () => {
   try {
-    const db = await SQLite.openDatabaseAsync(DB_NAME);
+    const db = await getDB();
+    
+    // WAL modunda okuma yapmadan önce checkpoint
+    await db.execAsync('PRAGMA wal_checkpoint(PASSIVE);');
+    
     const allRows = await db.getAllAsync('SELECT * FROM sessions_detailed ORDER BY id DESC');
-    return allRows;
+    return allRows || [];
   } catch (error) {
+    console.error('Fetch sessions error:', error);
     return [];
   }
 };

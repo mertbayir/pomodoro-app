@@ -40,7 +40,7 @@ export default function App() {
             letterSpacing: 0.5,
             paddingBottom: 5
           },
-          tabBarActiveTintColor: '#6366F1',
+          tabBarActiveTintColor: '#7C9D6B',
           tabBarInactiveTintColor: '#94A3B8'
         }}
       >

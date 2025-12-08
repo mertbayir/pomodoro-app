@@ -1,15 +1,15 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Dimensions, RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchSessions } from '../services/db';
-
-import { BarChart } from 'react-native-chart-kit';
+import Svg, { Path, Circle } from 'react-native-svg';
 
 const screenWidth = Dimensions.get('window').width - 40; 
 
 export default function ReportScreen() {
   const [sessions, setSessions] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -21,6 +21,12 @@ export default function ReportScreen() {
     const data = await fetchSessions();
     setSessions(data || []);
   }
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  }, []);
 
 
   const { barData, barLabels, pieData, generalStats } = useMemo(() => {
@@ -83,7 +89,7 @@ export default function ReportScreen() {
     const barData = days.map(d => Math.round((dayTotals[d] || 0) / 60));
 
 
-    const colors = ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0', '#F44336', '#FFEB3B', '#607D8B'];
+    const colors = ['#7C9D6B', '#C19A6B', '#8B9A7E', '#A8BF92', '#9C8F7A', '#B3C59F', '#8A7968'];
     const pieData = Object.keys(catTotals).map((cat, idx) => ({
       name: cat,
       minutes: Math.round(catTotals[cat] / 60),
@@ -109,6 +115,45 @@ export default function ReportScreen() {
   const formatMinSec = (seconds) => {
     const m = Math.floor(seconds / 60);
     return `${m}dk ${seconds % 60}sn`;
+  };
+
+  // Modern Bar Chart Komponenti
+  const renderModernBarChart = () => {
+    if (!barData || barData.length === 0) {
+      return <Text style={{ textAlign: 'center', color: '#94A3B8', marginTop: 12, fontSize: 14 }}>Gösterilecek veri yok.</Text>;
+    }
+
+    const maxValue = Math.max(...barData, 1);
+    
+    return (
+      <View style={styles.modernChartContainer}>
+        {barLabels.map((label, index) => {
+          const value = barData[index];
+          const heightPercentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
+          const barHeight = Math.max(heightPercentage * 1.5, 4); // Minimum görünürlük için 4px
+          
+          return (
+            <View key={index} style={styles.barWrapper}>
+              <View style={styles.barContainer}>
+                <Text style={styles.barValue}>{value > 0 ? value : ''}</Text>
+                <View style={styles.barTrack}>
+                  <View 
+                    style={[
+                      styles.barFill, 
+                      { 
+                        height: `${heightPercentage}%`,
+                        backgroundColor: value > 0 ? '#7C9D6B' : '#E2E8F0'
+                      }
+                    ]} 
+                  />
+                </View>
+              </View>
+              <Text style={styles.barLabel}>{label}</Text>
+            </View>
+          );
+        })}
+      </View>
+    );
   };
 
   const renderItem = ({ item }) => {
@@ -163,56 +208,91 @@ export default function ReportScreen() {
 
     const total = pieChartData.reduce((sum, p) => sum + p.population, 0);
     
+    // Pasta grafiği parametreleri
+    const size = 240;
+    const radius = 90;
+    const centerX = size / 2;
+    const centerY = size / 2;
+    const innerRadius = 50; // Donut için iç boşluk
+    
+    // Her dilim için açı hesapla
+    let cumulativeAngle = 0;
+    const slices = pieChartData.map((item) => {
+      const percentage = total > 0 ? (item.population / total) : 0;
+      const angle = percentage * 360;
+      const slice = {
+        ...item,
+        percentage: percentage * 100,
+        startAngle: cumulativeAngle,
+        sweepAngle: angle
+      };
+      cumulativeAngle += angle;
+      return slice;
+    });
+    
+    // Pasta dilimi için SVG path oluştur
+    const createPieSlice = (startAngle, sweepAngle, outerRadius, innerRadius) => {
+      const startAngleRad = (startAngle - 90) * Math.PI / 180;
+      const endAngleRad = (startAngle + sweepAngle - 90) * Math.PI / 180;
+      
+      const x1 = centerX + outerRadius * Math.cos(startAngleRad);
+      const y1 = centerY + outerRadius * Math.sin(startAngleRad);
+      const x2 = centerX + outerRadius * Math.cos(endAngleRad);
+      const y2 = centerY + outerRadius * Math.sin(endAngleRad);
+      
+      const x3 = centerX + innerRadius * Math.cos(endAngleRad);
+      const y3 = centerY + innerRadius * Math.sin(endAngleRad);
+      const x4 = centerX + innerRadius * Math.cos(startAngleRad);
+      const y4 = centerY + innerRadius * Math.sin(startAngleRad);
+      
+      const largeArc = sweepAngle > 180 ? 1 : 0;
+      
+      return `
+        M ${x1} ${y1}
+        A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${x2} ${y2}
+        L ${x3} ${y3}
+        A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4}
+        Z
+      `;
+    };
+    
     return (
-      <View style={{ 
-        padding: 20, 
-        backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-        borderRadius: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-        elevation: 8,
-        borderWidth: 1,
-        borderColor: 'rgba(226, 232, 240, 0.5)'
-      }}>
-        {pieChartData.map((p, i) => {
-          const percentage = total > 0 ? Math.round((p.population / total) * 100) : 0;
-          return (
-            <View key={i} style={{ marginBottom: 16 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={{ 
-                    width: 20, 
-                    height: 20, 
-                    backgroundColor: p.color || '#94A3B8', 
-                    marginRight: 12, 
-                    borderRadius: 6,
-                    shadowColor: p.color || '#94A3B8',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 4,
-                    elevation: 3
-                  }} />
-                  <Text style={{ color: '#1E293B', fontWeight: '600', fontSize: 15, letterSpacing: 0.2 }}>{p.name}</Text>
-                </View>
-                <Text style={{ color: '#64748B', fontSize: 13, fontWeight: '600' }}>{p.population} dk (%{percentage})</Text>
-              </View>
-              <View style={{ height: 8, backgroundColor: '#E2E8F0', borderRadius: 6, overflow: 'hidden' }}>
-                <View style={{ 
-                  width: `${percentage}%`, 
-                  height: '100%', 
-                  backgroundColor: p.color || '#94A3B8',
-                  borderRadius: 6,
-                  shadowColor: p.color || '#94A3B8',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.4,
-                  shadowRadius: 2
-                }} />
-              </View>
+      <View style={styles.pieChartContainer}>
+        {/* Pasta Grafiği */}
+        <View style={styles.pieChartWrapper}>
+          <Svg width={size} height={size}>
+            {slices.map((slice, index) => (
+              <Path
+                key={`slice-${index}`}
+                d={createPieSlice(slice.startAngle, slice.sweepAngle, radius, innerRadius)}
+                fill={slice.color}
+                stroke="white"
+                strokeWidth={2}
+              />
+            ))}
+            {/* Merkez daire (isteğe bağlı dekorasyon) */}
+            <Circle
+              cx={centerX}
+              cy={centerY}
+              r={innerRadius - 2}
+              fill="white"
+              stroke="#E2E8F0"
+              strokeWidth={1}
+            />
+          </Svg>
+        </View>
+        
+        {/* Legend (Açıklama) */}
+        <View style={styles.legendContainer}>
+          {slices.map((slice, index) => (
+            <View key={`legend-${index}`} style={styles.legendItem}>
+              <View style={[styles.legendColor, { backgroundColor: slice.color }]} />
+              <Text style={styles.legendText}>
+                {slice.name}: {slice.population} dk ({slice.percentage.toFixed(0)}%)
+              </Text>
             </View>
-          );
-        })}
+          ))}
+        </View>
       </View>
     );
   };
@@ -226,6 +306,14 @@ export default function ReportScreen() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#4338CA']}
+            tintColor="#4338CA"
+          />
+        }
         ListEmptyComponent={<Text style={{textAlign:'center', marginTop: 40, color:'#64748B', fontSize: 16, fontWeight: '500'}}>Henüz kayıt bulunmuyor.</Text>}
         ListHeaderComponent={() => (
           <View>
@@ -235,40 +323,22 @@ export default function ReportScreen() {
               <View style={styles.statsContainer}>
                 <View style={styles.statCard}>
                   <Text style={styles.statNumber}>{generalStats.todayTotal}</Text>
-                  <Text style={styles.statLabel}>Bugün Toplam (dk)</Text>
+                  <Text style={styles.statLabel}>Bugün Toplam Odaklanma Süresi (dk)</Text>
                 </View>
                 <View style={styles.statCard}>
                   <Text style={styles.statNumber}>{generalStats.allTimeTotal}</Text>
-                  <Text style={styles.statLabel}>Tüm Zamanlar (dk)</Text>
+                  <Text style={styles.statLabel}>Tüm Zamanların Toplam Odaklanma Süresi (dk)</Text>
                 </View>
                 <View style={styles.statCard}>
                   <Text style={styles.statNumber}>{generalStats.totalDistractions}</Text>
-                  <Text style={styles.statLabel}>Toplam Dikkat Dağınıklığı</Text>
+                  <Text style={styles.statLabel}>Toplam Dikkat Dağınıklığı Sayısı</Text>
                 </View>
               </View>
             </View>
 
-
             <View style={{ marginBottom: 20 }}>
-              <Text style={styles.chartTitle}>Son 7 Gün (Dakika)</Text>
-              {barLabels && barLabels.length > 0 ? (
-                <BarChart
-                  data={{ labels: barLabels, datasets: [{ data: barData }] }}
-                  width={screenWidth}
-                  height={220}
-                  fromZero
-                  chartConfig={{
-                    backgroundGradientFrom: '#fff',
-                    backgroundGradientTo: '#fff',
-                    decimalPlaces: 0,
-                    color: (opacity = 1) => `rgba(0,122,255, ${opacity})`,
-                    labelColor: () => '#444',
-                  }}
-                  style={{ borderRadius: 12 }}
-                />
-              ) : (
-                <Text style={{ textAlign: 'center', color: '#999', marginTop: 10 }}>Gösterilecek veri yok.</Text>
-              )}
+              <Text style={styles.chartTitle}>Son 7 Gün Odaklanma Süresi</Text>
+              {renderModernBarChart()}
             </View>
 
 
@@ -399,13 +469,13 @@ const styles = StyleSheet.create({
   },
   statCard: { 
     flex: 1, 
-    backgroundColor: 'rgba(238, 242, 255, 0.95)', 
+    backgroundColor: 'rgba(232, 239, 224, 0.95)', 
     padding: 20, 
     borderRadius: 24, 
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(99, 102, 241, 0.3)',
-    shadowColor: '#6366F1',
+    borderColor: 'rgba(124, 157, 107, 0.3)',
+    shadowColor: '#7C9D6B',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 16,
@@ -415,10 +485,10 @@ const styles = StyleSheet.create({
   statNumber: { 
     fontSize: 30, 
     fontWeight: '800', 
-    color: '#6366F1', 
+    color: '#7C9D6B', 
     marginBottom: 6,
     letterSpacing: 0.5,
-    textShadowColor: 'rgba(99, 102, 241, 0.3)',
+    textShadowColor: 'rgba(124, 157, 107, 0.3)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4
   },
@@ -428,6 +498,122 @@ const styles = StyleSheet.create({
     textAlign: 'center', 
     fontWeight: '600',
     letterSpacing: 0.3
+  },
+  
+  // Modern Bar Chart Styles
+  modernChartContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'flex-end',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    padding: 20,
+    paddingTop: 30,
+    borderRadius: 20,
+    height: 220,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.5)',
+  },
+  barWrapper: {
+    alignItems: 'center',
+    flex: 1,
+    height: '100%',
+    justifyContent: 'flex-end',
+  },
+  barContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-end',
+    width: '100%',
+    paddingBottom: 8,
+  },
+  barValue: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#6B5B3D',
+    marginBottom: 6,
+    minHeight: 18,
+  },
+  barTrack: {
+    width: '80%',
+    flex: 1,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 8,
+    overflow: 'hidden',
+    justifyContent: 'flex-end',
+    minHeight: 40,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  barFill: {
+    width: '100%',
+    borderRadius: 8,
+    minHeight: 4,
+    shadowColor: '#7C9D6B',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  barLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  
+  // Pie Chart Styles
+  pieChartContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.5)',
+  },
+  pieChartWrapper: {
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingVertical: 10,
+  },
+  legendContainer: {
+    marginTop: 10,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  legendColor: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginRight: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  legendText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1E293B',
+    flex: 1,
   },
   
 });

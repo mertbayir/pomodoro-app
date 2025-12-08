@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, AppState } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, AppState, Modal } from 'react-native';
 
 
 import { insertSession } from '../services/db';
@@ -29,6 +29,8 @@ export default function HomeScreen() {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [initialTimer, setInitialTimer] = useState(25 * 60);
   const [distractionCount, setDistractionCount] = useState(0);
+  const [showSummary, setShowSummary] = useState(false);
+  const [summaryData, setSummaryData] = useState(null);
 
   const isRunningRef = useRef(isRunning);
   const sessionStartedRef = useRef(sessionStarted);
@@ -107,7 +109,18 @@ export default function HomeScreen() {
     const successRate = Math.round((actualDuration / initialTimer) * 100);
     const status = isCompleted ? 'TAMAMLANDI' : 'YARIDA KALDI';
 
+    // Özet verilerini hazırla
+    const summary = {
+      category: selectedCategory,
+      duration: actualDuration,
+      distractionCount: distractionCount,
+      isCompleted: isCompleted,
+      successRate: successRate,
+      status: status
+    };
 
+    setSummaryData(summary);
+    setShowSummary(true);
 
     try {
       await insertSession(
@@ -118,12 +131,6 @@ export default function HomeScreen() {
         status,            // durum
         distractionCount   // dikkat dağınıklığı sayısı
       );
-      
-      const message = isCompleted 
-        ? `🎉 Tebrikler! ${Math.floor(actualDuration/60)} dakika odaklandınız!`
-        : `Session kaydedildi. ${Math.floor(actualDuration/60)} dakika çalıştınız (Başarı: %${successRate})`;
-        
-      Alert.alert("Session Tamamlandı", message);
       
     } catch (error) {
       Alert.alert("Hata", "Session kaydedilemedi!");
@@ -193,6 +200,12 @@ export default function HomeScreen() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  const closeSummary = () => {
+    setShowSummary(false);
+    setSummaryData(null);
+    setTimer(targetMinutes * 60);
   };
 
   return (
@@ -285,6 +298,65 @@ export default function HomeScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Session Summary Modal */}
+      <Modal
+        visible={showSummary}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={closeSummary}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.summaryContainer}>
+            <Text style={styles.summaryTitle}>
+              {summaryData?.isCompleted ? '🎉 Tebrikler!' : '📊 Seans Özeti'}
+            </Text>
+            
+            <View style={styles.summaryContent}>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Kategori:</Text>
+                <Text style={styles.summaryValue}>{summaryData?.category}</Text>
+              </View>
+              
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Süre:</Text>
+                <Text style={styles.summaryValue}>
+                  {Math.floor((summaryData?.duration || 0) / 60)} dakika {(summaryData?.duration || 0) % 60} saniye
+                </Text>
+              </View>
+              
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Dikkat Dağınıklığı:</Text>
+                <Text style={[styles.summaryValue, styles.distractionValue]}>
+                  {summaryData?.distractionCount} kez
+                </Text>
+              </View>
+              
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Başarı Oranı:</Text>
+                <Text style={styles.summaryValue}>%{summaryData?.successRate}</Text>
+              </View>
+              
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Durum:</Text>
+                <Text style={[
+                  styles.summaryValue, 
+                  summaryData?.isCompleted ? styles.statusCompleted : styles.statusIncomplete
+                ]}>
+                  {summaryData?.status}
+                </Text>
+              </View>
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.closeButton} 
+              onPress={closeSummary}
+            >
+              <Text style={styles.closeButtonText}>Tamam</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -292,17 +364,18 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    paddingTop: 55, 
-    backgroundColor: '#E0E7FF',
+    paddingTop: 50, 
+    paddingBottom: 20,
+    backgroundColor: '#F5F1E8',
     alignItems: 'center'
   },
   headerTitle: { 
     fontSize: 30, 
     fontWeight: '800', 
-    color: '#4338CA', 
+    color: '#6B5B3D', 
     marginBottom: 20,
     letterSpacing: 0.8,
-    textShadowColor: 'rgba(67, 56, 202, 0.2)',
+    textShadowColor: 'rgba(107, 91, 61, 0.2)',
     textShadowOffset: { width: 0, height: 3 },
     textShadowRadius: 6
   },
@@ -316,40 +389,40 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3
   },
   categoryWrapper: { 
-    height: 100, 
+    height: 90, 
     width: '100%',
-    backgroundColor: '#FEF3C7',
-    borderRadius: 24,
-    marginVertical: 12,
-    paddingVertical: 12,
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 8
+    backgroundColor: '#E8EFE0',
+    borderRadius: 20,
+    marginVertical: 8,
+    paddingVertical: 10,
+    shadowColor: '#7C9D6B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6
   },
   scrollArea: { paddingLeft: 10, },
   categoryButton: { 
     backgroundColor: '#F1F5F9', 
-    paddingVertical: 10, 
-    paddingHorizontal: 18, 
-    borderRadius: 25, 
-    marginRight: 10, 
+    paddingVertical: 8, 
+    paddingHorizontal: 16, 
+    borderRadius: 20, 
+    marginRight: 8, 
     height: 42, 
     justifyContent: 'center', 
     borderWidth: 2, 
     borderColor: 'transparent',
     shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
     elevation: 2
   },
   categoryButtonActive: { 
-    backgroundColor: '#EEF2FF',
-    borderColor: '#4F46E5',
+    backgroundColor: '#F0F5EB',
+    borderColor: '#7C9D6B',
     borderWidth: 2,
-    shadowColor: '#4F46E5',
+    shadowColor: '#7C9D6B',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,
     shadowRadius: 8,
@@ -358,23 +431,23 @@ const styles = StyleSheet.create({
   categoryText: { 
     color: '#64748B', 
     fontWeight: '600', 
-    fontSize: 15,
+    fontSize: 14,
     letterSpacing: 0.2
   },
   categoryTextActive: { 
-    color: '#4F46E5', 
+    color: '#7C9D6B', 
     fontWeight: '700',
-    textShadowColor: 'rgba(99, 102, 241, 0.18)',
+    textShadowColor: 'rgba(124, 157, 107, 0.18)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2
   },
 
   activeIndicator: {
-    marginTop: 8,
+    marginTop: 6,
     width: '60%',
-    height: 4,
-    backgroundColor: '#4F46E5',
-    borderRadius: 4,
+    height: 3,
+    backgroundColor: '#7C9D6B',
+    borderRadius: 3,
     alignSelf: 'center'
   },
   categoryButtonDisabled: {
@@ -387,16 +460,16 @@ const styles = StyleSheet.create({
   },
   adjusterContainer: { 
     width: '90%', 
-    marginVertical: 15, 
-    padding: 24, 
+    marginVertical: 10, 
+    padding: 18, 
     backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-    borderRadius: 24,
+    borderRadius: 20,
     backdropFilter: 'blur(20px)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 8,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)'
   },
@@ -409,8 +482,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     alignItems: 'center', 
     borderWidth: 2, 
-    borderColor: '#C7D2FE', 
-    shadowColor: '#6366F1',
+    borderColor: '#D4E3C8', 
+    shadowColor: '#7C9D6B',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.18,
     shadowRadius: 10,
@@ -433,28 +506,28 @@ const styles = StyleSheet.create({
   },
   timerContainer: { 
     alignItems: 'center', 
-    marginVertical: 35,
+    marginVertical: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    paddingVertical: 35,
-    paddingHorizontal: 50,
-    borderRadius: 40,
-    shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 30,
-    elevation: 15,
+    paddingVertical: 28,
+    paddingHorizontal: 40,
+    borderRadius: 32,
+    shadowColor: '#7C9D6B',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    elevation: 12,
     borderWidth: 2,
-    borderColor: 'rgba(99, 102, 241, 0.1)'
+    borderColor: 'rgba(124, 157, 107, 0.1)'
   },
   counterText: { 
-    fontSize: 88, 
+    fontSize: 76, 
     fontWeight: '900', 
     color: '#0F172A', 
     fontVariant: ['tabular-nums'],
     textShadowColor: 'rgba(0,0,0,0.1)',
     textShadowOffset: { width: 0, height: 3 },
     textShadowRadius: 6,
-    letterSpacing: 3
+    letterSpacing: 2
   },
   currentTaskText: { 
     fontSize: 18, 
@@ -465,9 +538,9 @@ const styles = StyleSheet.create({
   },
   buttonRow: { 
     flexDirection: 'row', 
-    gap: 28, 
-    marginTop: 25,
-    marginBottom: 20
+    gap: 20, 
+    marginTop: 15,
+    marginBottom: 30
   },
   button: { 
     paddingVertical: 20, 
@@ -482,16 +555,16 @@ const styles = StyleSheet.create({
     elevation: 10
   },
   btnStart: { 
-    backgroundColor: '#22C55E',
-    shadowColor: '#22C55E'
+    backgroundColor: '#7C9D6B',
+    shadowColor: '#7C9D6B'
   }, 
   btnPause: { 
-    backgroundColor: '#FB923C',
-    shadowColor: '#FB923C'
+    backgroundColor: '#C19A6B',
+    shadowColor: '#C19A6B'
   }, 
   btnReset: { 
-    backgroundColor: '#64748B',
-    shadowColor: '#64748B'
+    backgroundColor: '#8B9A7E',
+    shadowColor: '#8B9A7E'
   }, 
   btnText: { 
     color: 'white', 
@@ -508,6 +581,83 @@ const styles = StyleSheet.create({
     marginTop: 8, 
     fontWeight: '700',
     letterSpacing: 0.2
+  },
+  
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  summaryContainer: {
+    width: '85%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.3,
+    shadowRadius: 24,
+    elevation: 15,
+  },
+  summaryTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#6B5B3D',
+    textAlign: 'center',
+    marginBottom: 24,
+    letterSpacing: 0.5,
+  },
+  summaryContent: {
+    marginBottom: 24,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  summaryLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#64748B',
+    flex: 1,
+  },
+  summaryValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1E293B',
+    flex: 1,
+    textAlign: 'right',
+  },
+  distractionValue: {
+    color: '#DC2626',
+  },
+  statusCompleted: {
+    color: '#7C9D6B',
+  },
+  statusIncomplete: {
+    color: '#C19A6B',
+  },
+  closeButton: {
+    backgroundColor: '#7C9D6B',
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    shadowColor: '#7C9D6B',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  closeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   
 });
