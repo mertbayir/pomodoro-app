@@ -71,5 +71,5 @@ export const fetchSessions = async () => {
   } catch (error) {
     console.error('Fetch sessions error:', error);
     return [];
-  }
+  } 
 };
