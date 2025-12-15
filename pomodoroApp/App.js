@@ -1,12 +1,18 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Alert } from 'react-native';
+import { Alert, LogBox } from 'react-native';
 import HomeScreen from './screens/HomeScreen';
 import ReportScreen from './screens/ReportScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { initDB } from './services/db';
 import { SessionProvider, useSession } from './contexts/SessionContext';
+
+// Expo Go bildirim uyarısını gizle
+LogBox.ignoreLogs([
+  'expo-notifications',
+  'functionality is not fully supported in Expo Go',
+]);
 
 const Tab = createBottomTabNavigator();
 

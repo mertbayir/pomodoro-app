@@ -1,10 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, AppState, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, AppState, Modal, TextInput, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 
 
 import { insertSession } from '../services/db';
 import { useSession } from '../contexts/SessionContext';
+
+// Bildirim yapılandırması
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function HomeScreen() {
 
@@ -39,6 +49,33 @@ export default function HomeScreen() {
   const isRunningRef = useRef(isRunning);
   const sessionStartedRef = useRef(sessionStarted);
   const prevAppStateRef = useRef(AppState.currentState);
+
+  // Bildirim izni isteme
+  useEffect(() => {
+    (async () => {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+        console.log('Bildirim izni verilmedi!');
+      }
+    })();
+  }, []);
+
+  // Bildirim gönderme fonksiyonu
+  const sendNotification = async (title, body) => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: title,
+        body: body,
+        sound: true,
+      },
+      trigger: null, // Hemen gönder
+    });
+  };
 
   useEffect(() => {
     (async () => {
@@ -154,6 +191,20 @@ export default function HomeScreen() {
     const actualDuration = initialTimer - timer;
     const successRate = Math.round((actualDuration / initialTimer) * 100);
     const status = isCompleted ? 'TAMAMLANDI' : 'YARIDA KALDI';
+    
+    // Bildirim gönder
+    if (isCompleted) {
+      await sendNotification(
+        '🎉 Tebrikler!',
+        `${selectedCategory} çalışmanızı başarıyla tamamladınız! Harika iş çıkardınız! 🌟`
+      );
+    } else {
+      await sendNotification(
+        '📝 Çalışma Duraklatıldı',
+        `${selectedCategory} çalışmanız yarıda kaldı. Tekrar bekliyorum, devam edebilirsiniz! 💪`
+      );
+    }
+    
     setSummaryData({ category: selectedCategory, duration: actualDuration, distractionCount, isCompleted, successRate, status });
     setShowSummary(true);
     try {
