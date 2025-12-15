@@ -2,7 +2,6 @@ import * as SQLite from 'expo-sqlite';
 
 const DB_NAME = 'focusApp.db';
 
-// Singleton pattern - tek bir DB instance kullan
 let dbInstance = null;
 
 const getDB = async () => {
@@ -16,7 +15,6 @@ export const initDB = async () => {
   try {
     const db = await getDB();
     
-    // Tablo ismini değiştirdik: sessions_detailed
       await db.execAsync(`
         PRAGMA journal_mode = WAL;
         CREATE TABLE IF NOT EXISTS sessions_detailed (
@@ -31,7 +29,6 @@ export const initDB = async () => {
         );
       `);
 
-      // Eğer eski bir tablo varsa ve distraction_count sütunu yoksa, ekle
       try {
         const cols = await db.getAllAsync("PRAGMA table_info('sessions_detailed')");
         const hasDistraction = cols.some(c => c.name === 'distraction_count');
@@ -39,14 +36,11 @@ export const initDB = async () => {
           await db.execAsync("ALTER TABLE sessions_detailed ADD COLUMN distraction_count INTEGER DEFAULT 0;");
         }
       } catch (e) {
-        // Eğer PRAGMA veya ALTER desteklenmezse sessizce devam et
       }
   } catch (error) {
-    // Tablo oluşturma hatası
   }
 };
 
-// Yeni Ekleme Fonksiyonu (Tüm detayları alıyor)
 export const insertSession = async (category, target, actual, rate, status, distractionCount = 0) => {
   try {
     const db = await getDB();
@@ -57,7 +51,6 @@ export const insertSession = async (category, target, actual, rate, status, dist
       [category, target, actual, rate, status, distractionCount, date]
     );
     
-    // Veri yazıldıktan sonra WAL checkpoint yap
     await db.execAsync('PRAGMA wal_checkpoint(PASSIVE);');
     
     return true;
@@ -71,7 +64,6 @@ export const fetchSessions = async () => {
   try {
     const db = await getDB();
     
-    // WAL modunda okuma yapmadan önce checkpoint
     await db.execAsync('PRAGMA wal_checkpoint(PASSIVE);');
     
     const allRows = await db.getAllAsync('SELECT * FROM sessions_detailed ORDER BY id DESC');

@@ -1,17 +1,28 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Alert } from 'react-native';
 import HomeScreen from './screens/HomeScreen';
 import ReportScreen from './screens/ReportScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { initDB } from './services/db';
+import { SessionProvider, useSession } from './contexts/SessionContext';
 
 const Tab = createBottomTabNavigator();
 
-export default function App() {
-    useEffect(() => {
-    initDB();
-  }, []);
+function TabNavigator() {
+  const { sessionStarted } = useSession();
+
+  const handleReportTabPress = (e, navigation) => {
+    if (sessionStarted) {
+      e.preventDefault();
+      Alert.alert(
+        'Dikkat!',
+        'Çalışma seansı devam ediyor. Lütfen önce seansı tamamlayın veya sıfırlayın.',
+        [{ text: 'Tamam' }]
+      );
+    }
+  };
 
   return (
     <NavigationContainer>
@@ -63,8 +74,23 @@ export default function App() {
               <MaterialCommunityIcons name="chart-bar" color={color} size={size ?? 22} />
             )
           }}
+          listeners={({ navigation }) => ({
+            tabPress: (e) => handleReportTabPress(e, navigation)
+          })}
         />
       </Tab.Navigator>
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  useEffect(() => {
+    initDB();
+  }, []);
+
+  return (
+    <SessionProvider>
+      <TabNavigator />
+    </SessionProvider>
   );
 }
